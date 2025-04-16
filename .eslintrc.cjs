@@ -13,6 +13,7 @@ module.exports = {
   },
 
   rules: {
+    'no-underscore-dangle': ['error', { allow: ['_id'] }],
     'prettier/prettier': 'error',
     'no-console': 'off',
     'import/extensions': [
@@ -22,6 +23,8 @@ module.exports = {
         js: 'always', // <-- this tells ESLint to allow .js extensions
       },
     ],
+    semi: ['error', 'always'],
+    quotes: ['warn', 'single'],
   },
 
   settings: {

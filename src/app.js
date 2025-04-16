@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import indexRouter from './routes/index.js';
 import connectDB from './config/db.js';
-
+import userRouter from './routes/user.js';
 // load environment variables
 dotenv.config();
 
@@ -17,6 +17,7 @@ app.use(express.json());
 
 // mount routes
 app.use('/api/', indexRouter);
+app.use('/api', userRouter);
 
 // start server
 app.listen(PORT, () => {
