@@ -88,6 +88,8 @@ export const updatePost = async (req, res) => {
     if (post.author.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized' });
     }
+
+    // auto create slug from the tile
     const slug = slugify(title, { lower: true, strict: true });
 
     post.title = title || post.title;
@@ -116,5 +118,104 @@ export const deletePost = async (req, res) => {
     return res.status(200).json({ message: 'Post deleted' });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+// like a post logic
+export const likePost = async (req, res) => {
+  try {
+    // find post by id
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // check if post is already liked
+    if (post.likedBy.map((id) => id.toString()).includes(req.user.id)) {
+      return res.status(400).json({ message: 'Already liked' });
+    }
+
+    // if post been liked already then avoid it from being disliked simultaneouslys
+    if (post.dislikedBy.map((id) => id.toString()).includes(req.user.id)) {
+      post.dislikedBy.pull(req.user.id);
+    }
+
+    // Populate the likedBy field with the id who likes the post
+    post.likedBy.addToSet(req.user.id); // won't duplicate
+    await post.save();
+    return res
+      .status(200)
+      .json({ message: 'Post liked', likedBy: post.likedBy });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// dislike a post logic
+export const dislikePost = async (req, res) => {
+  try {
+    // check for post
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // check if post is already disliked
+    if (post.dislikedBy.map((id) => id.toString()).includes(req.user.id)) {
+      return res.status(400).json({ message: 'Already disliked' });
+    }
+
+    // since post is disliked, prevent it from being liked simultaneosuly
+    if (post.likedBy.map((id) => id.toString()).includes(req.user.id)) {
+      post.likedBy.pull(req.user.id);
+    }
+
+    // populate the disliked field with the id who disliked
+    post.dislikedBy.addToSet(req.user.id); // won't duplicate
+    await post.save();
+    return res.status(200).json({
+      message: 'Post disliked',
+      dislikedBy: post.dislikedBy,
+      likes: post.likedBy.length,
+      dislikes: post.dislikedBy.length,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// undo either a liked or disliked post
+export const undoLikeDislike = async (req, res) => {
+  try {
+    // Get a post by Id
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Get the id of the liked and remove from the likedBy array
+    if (post.likedBy.map((id) => id.toString()).includes(req.user.id)) {
+      post.likedBy.pull(req.user.id);
+      await post.save();
+      return res.status(200).json({
+        message: 'Like removed',
+        likes: post.likedBy.length,
+        dislikes: post.dislikedBy.length,
+      });
+    }
+
+    // Get the id of the disliked post remove from the likedBy array
+    if (post.dislikedBy.map((id) => id.toString()).includes(req.user.id)) {
+      post.dislikedBy.pull(req.user.id);
+      await post.save();
+      return res.status(200).json({
+        message: 'Dislike removed',
+        likes: post.likedBy.length,
+        dislikes: post.dislikedBy.length,
+      });
+    }
+    return res.status(400).json({ message: 'No like or dislike to undo' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
   }
 };

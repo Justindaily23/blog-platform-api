@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+// import slugify from 'slugify';
 
 const postSchema = new mongoose.Schema(
   {
@@ -19,6 +20,18 @@ const postSchema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    likedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    dislikedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -38,7 +51,12 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+/*
+postSchema.pre('save', function hasSlug() {
+  if (this.isModified('title')) return;
+  this.slug = slugify(this.title, { lower: true, strict: true });
+});
+*/
 const Post = mongoose.model('Post', postSchema);
 
 export default Post;
