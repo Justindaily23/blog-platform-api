@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import userRouter from './routes/user.js';
 import postRouter from './routes/post.js';
 import categoryRouter from './routes/category.js';
+import commentRouter from './routes/comment.js';
 
 // load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ app.use('/api/', indexRouter);
 app.use('/api', userRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/categories', categoryRouter);
+app.use('/api/comments', commentRouter);
 
 // start server
 app.listen(PORT, () => {
