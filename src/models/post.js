@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+// import Category from './category.js';
+
 // import slugify from 'slugify';
 
 const postSchema = new mongoose.Schema(
@@ -48,6 +50,18 @@ const postSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'Category is required'],
+    },
+    tags: [
+      {
+        type: String,
+        trim: true,
+        maxlength: [30, 'Tag cannot exceed 30 characters'],
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -57,6 +71,8 @@ postSchema.pre('save', function hasSlug() {
   this.slug = slugify(this.title, { lower: true, strict: true });
 });
 */
+postSchema.index({ tags: 1 }); // Index for faster tag queries
+
 const Post = mongoose.model('Post', postSchema);
 
 export default Post;

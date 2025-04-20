@@ -1,13 +1,20 @@
 import slugify from 'slugify';
 import Post from '../models/post.js';
+// import Category from '../models/category.js';
 
 // Create post (author/admin only)
 export const createPost = async (req, res) => {
   try {
-    const { title, content, status, image } = req.body;
-    if (!title || !content) {
+    // Check if user is an author or an admin
+    if (req.user.role !== 'author' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Insert content to database
+    const { title, content, status, image, category, tags } = req.body;
+    if (!title || !content || !category) {
       return res.status(400).json({
-        message: 'Insert Title and Content',
+        message: 'Title, Content and Category is required',
       });
     }
     const slug = slugify(title, { lower: true, strict: true });
@@ -18,6 +25,8 @@ export const createPost = async (req, res) => {
       status: status || 'draft',
       image: image || null,
       slug,
+      category,
+      tags: tags || [],
       author: req.user.id,
     });
     await post.save();
@@ -32,20 +41,39 @@ export const createPost = async (req, res) => {
 // Get all posts (public)
 export const getPosts = async (req, res) => {
   try {
+    // Get pagination information from the url
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
+    // Check filters
+    const { category, tag } = req.query;
+
+    const query = { status: 'published' };
+    if (category) query.category = category;
+    if (tag) query.tags = tag;
+
+    // Fetch posts from the database
     const posts = await Post.find({ status: 'published' })
       .populate('author', 'username email')
+      .populate('category', 'name')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Post.countDocuments({ status: 'published' });
+    // const total = await Post.countDocuments(query);
+    const total = await Post.countDocuments(query);
 
+    // const postObj = post.toObject(); // Mongoose method
     return res.status(200).json({
-      data: posts,
+      posts: posts.map((post) => {
+        const postObj = post.toObject(); // Converts Mongoose document to plain object
+        return {
+          ...postObj,
+          likes: post.likedBy.length,
+          dislikes: post.dislikedBy.length,
+        };
+      }),
       pagination: {
         page,
         limit,
