@@ -6,6 +6,7 @@ import {
   likeComment,
   dislikeComment,
   undoLikeDislikeComment,
+  deleteComment,
 } from '../controllers/comment.js';
 import auth from '../middleware/auth.js';
 
@@ -19,5 +20,6 @@ router.post('/', auth, createComment);
 router.post('/:id/like', auth, likeComment);
 router.post('/:id/dislike', auth, dislikeComment);
 router.post('/:id/undo', auth, undoLikeDislikeComment);
+router.delete('/:id', auth, deleteComment);
 
 export default router;

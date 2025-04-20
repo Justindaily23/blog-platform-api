@@ -126,3 +126,26 @@ export const undoLikeDislikeComment = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+// Delete a comment (author or admin only)
+export const deleteComment = async (req, res) => {
+  try {
+    // Find comment by ID
+    const comment = await Comment.findById(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    // Check if user is comment author or admin
+    if (
+      comment.author.toString() !== req.user.id &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    // Delete the comment
+    await comment.deleteOne();
+    return res.status(200).json({ message: 'Comment deleted' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
