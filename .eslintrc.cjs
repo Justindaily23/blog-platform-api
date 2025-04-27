@@ -2,6 +2,7 @@ module.exports = {
   env: {
     node: true,
     es2021: true,
+    jest: true, // This tells ESLint to recognize Jest's globals
   },
 
   extends: ['airbnb-base', 'plugin:prettier/recommended'],
@@ -13,6 +14,17 @@ module.exports = {
   },
 
   rules: {
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: [
+          '**/*.test.js',
+          '**/test/**/*',
+          '**/*.spec.js',
+          'setup.js', // Add your test setup file here if needed
+        ],
+      },
+    ],
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
     'prettier/prettier': 'error',
     'no-console': 'off',
