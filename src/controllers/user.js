@@ -15,6 +15,14 @@ export const register = async (req, res) => {
       });
     }
 
+    // Check if username already exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({
+        message: 'Username already taken',
+      });
+    }
+
     // Create user
     const user = new User({ email, username, password, role });
     await user.save();

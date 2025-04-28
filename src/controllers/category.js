@@ -3,7 +3,7 @@ import Category from '../models/category.js';
 
 export const createCategory = async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
+    if (!['admin', 'author'].includes(req.user.role)) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -26,7 +26,7 @@ export const createCategory = async (req, res) => {
     await category.save();
     return res.status(201).json(category);
   } catch (error) {
-    return res.status(500).json({ message: error.messages });
+    return res.status(500).json({ message: error.message });
   }
 };
 

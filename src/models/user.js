@@ -26,6 +26,14 @@ const userSchema = mongoose.Schema(
       type: String,
       enum: ['reader', 'author', 'admin'],
       default: 'reader',
+      set: (v) => (typeof v === 'string' ? v.toLowerCase() : v),
+      validate: {
+        validator(v) {
+          return typeof v === 'string';
+        },
+        message: (props) =>
+          `${props.value} is not a valid role! Must be a string.`,
+      },
     },
   },
   { timestamps: true }
