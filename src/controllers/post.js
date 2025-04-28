@@ -17,7 +17,13 @@ export const createPost = async (req, res) => {
         message: 'Title, Content and Category is required',
       });
     }
-    const slug = slugify(title, { lower: true, strict: true });
+    let slug = slugify(title, { lower: true, strict: true });
+
+    // Check if slug already exists in the database and make it unique if necessary
+    const existingPost = await Post.findOne({ slug });
+    if (existingPost) {
+      slug = `${slug}-${Date.now()}`; // Modify slug by appending timestamp
+    }
 
     const post = new Post({
       title,

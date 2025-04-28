@@ -22,6 +22,7 @@ module.exports = {
           '**/test/**/*',
           '**/*.spec.js',
           'setup.js', // Add your test setup file here if needed
+          '**/swagger.js', // <-- Add this line if swagger.js is in your dev folder
         ],
       },
     ],
